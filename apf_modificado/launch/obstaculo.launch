@@ -39,11 +39,7 @@
               -urdf
               -param robot_description
               -model husky
-              -robot_namespace husky0" />
-              
-         
+              -robot_namespace husky0" />        
 
- 
- 
-  <include file="$(find odometry_husky)/launch/start_odom.launch"/>
+  <include file="$(find apf_modificado)/launch/start_odom.launch"/>
 </launch>
