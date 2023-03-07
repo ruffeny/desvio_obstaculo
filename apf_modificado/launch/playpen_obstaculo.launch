@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Define arguments -->
+  <arg name="world" 		default="empty"/> 
+  <arg name="paused" 		default="false"/>
+  <arg name="use_sim_time" 	default="true"/>
+  <arg name="gui" 		default="true"/>
+  <arg name="headless" 		default="false"/>
+  <arg name="debug" 		default="false"/>
+  
+  <!-- Load the world environment -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find apf_modificado)/worlds/playpen_obstaculos.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+<!--
+  <include file="$(find husky_gazebo)/launch/spawn_husky.launch">
+    <arg name="robot_name" value="husky"/>
+    <arg name="x" value="0"/>
+    <arg name="y" value="0"/>
+    <arg name="z" value="0"/>
+  </include>
+  -->
+        <include file="$(find husky_control)/launch/control.launch">
+        <!-- <arg name="multimaster" value="$(arg multimaster)"/> -->
+      </include>
+     	
+         <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"
+        args="-x 0
+              -y 0
+              -z 0
+              -Y 0
+              -unpause
+              -urdf
+              -param robot_description
+              -model husky
+              -robot_namespace husky0" />        
+
+  <include file="$(find apf_modificado)/launch/start_odom.launch"/>
+</launch>
