@@ -7,7 +7,7 @@ from gazebo_msgs.srv import GetModelState, GetModelStateRequest
 
 rospy.init_node('odom_pub')
 
-odom_pub=rospy.Publisher ('/odom_husky', Odometry)
+odom_pub=rospy.Publisher ('/odom_husky', Odometry, queue_size=10)
 
 rospy.wait_for_service ('/gazebo/get_model_state')
 get_model_srv = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
@@ -19,7 +19,7 @@ header.frame_id='/odom_husky'
 model = GetModelStateRequest()
 model.model_name='husky'
 
-r = rospy.Rate(1200) #1200 hz
+r = rospy.Rate(20) #1200 hz
 
 while not rospy.is_shutdown():
     result = get_model_srv(model)

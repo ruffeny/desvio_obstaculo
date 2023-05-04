@@ -2,5 +2,10 @@
 <launch>
   <node name="odom_pub" pkg="odometry_husky" type="odometry.py" output="screen" />
   <node name="odom_pub_1" pkg="odometry_husky" type="odometry_func.py" output="screen" />
-  <node name="odom_pub_2" pkg="odometry_husky" type="odometry_func_2.py" output="screen" />
+  <node name="odom_obst1" pkg="apf_modificado" type="obst1.py" output="screen" />
+  <node name="odom_obst2" pkg="apf_modificado" type="obst2.py" output="screen" />
+  <node name="odom_obst3" pkg="apf_modificado" type="obst3.py" output="screen" />
+  <node name="odom_obst4" pkg="apf_modificado" type="obst4.py" output="screen" />
+  <node name="odom_obst5" pkg="apf_modificado" type="obst5.py" output="screen" />
+  <node name="odom_obst6" pkg="apf_modificado" type="obst6.py" output="screen" />
 </launch>

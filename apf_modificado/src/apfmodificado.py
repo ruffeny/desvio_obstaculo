@@ -111,7 +111,7 @@ obstacles_radius = [Rts]
 obstacles_velocities = [np.array([model_state.twist.linear.x, model_state.twist.linear.y])]
 
 #defini posição goal
-goal_pos = np.array([10, 10])
+goal_pos = np.array([9, 9])
 
 
 name='husky'

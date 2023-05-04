@@ -14,17 +14,14 @@ import os
 import sys
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+import cmath
 
 
 def save_robot_position(robot_positions,x, y):
     robot_positions.append((x, y))
     
     return robot_positions
-    
-def save_robot_position(obst_positions,x, y):
-    obst_positions.append((x, y))
-    
-    return obst_positions    
+ 
 
 def plot_robot_positions(robot_positions, obstacle_position, obstacle_radius):
     x = [pos[0] for pos in robot_positions]
@@ -45,12 +42,13 @@ def plot_robot_positions(robot_positions, obstacle_position, obstacle_radius):
 
 
 def adjust_angle(angle):
-    angle = angle % (2 * math.pi)
-    if angle > math.pi:
-        angle = angle - 2 * math.pi
-    if angle < -math.pi:
-        angle = angle + 2 * math.pi
-    return angle
+    angle = np.mod(angle, 2 * np.pi)
+    if angle > np.pi:
+        angle = angle - 2 * np.pi
+    if angle < -np.pi:
+        angle = angle + 2 * np.pi
+    angulo_ajustado = angle
+    return angulo_ajustado
     
 def spawn_husky_launch(husky_name, position_x=9.0, position_y=9.0, yaw=0.0):
     command = "roslaunch husky_gazebo spawn_husky.launch name:={0} x:={1} y:={2} yaw:={3}".format(husky_name, position_x, position_y, yaw)
@@ -102,14 +100,18 @@ def calculate_Frd(d,Dm,phou0,tetha,Vto,theta_m_degree,AngleDiff,Pot,Nd,Rts,dg,No
 	Ftop = var1*(1/np.linalg.norm(Pot)+np.cos(np.radians(theta_m_degree))/np.linalg.norm(Vto)) 
 	Frd1 = -Nd*Rts*dg**2*(var1*np.exp(AngleDiff)*(var2 + var3)+var5-Fto0)*Not
 	Frd3 = Nd*Rts*dg**2*var1*(np.exp(AngleDiff)-1)*Nog 
-	Frd2 = Nd*Rts*dg**2*(var1*np.exp(AngleDiff)*var6*var7-Ftop)*Notperp
+	Frd2 = -Nd*Rts*dg**2*(var1*np.exp(AngleDiff)*var6*var7-Ftop)*Notperp
 	Frd = Frd1 + Frd2 + Frd3
 	return Frd
 
 def modified_potential_field(goal,obstacles,obstacles_radius,obstacles_velocities,current_position,epsilon,Nd,Ns,Ne,tau,Ros,Dsafe,phou0,vos_velocity):
 	#vector that point from the robot_position to the goal
 	pg = goal - current_position 		
-	
+	#print(obstacles)
+	#print(obstacles_radius)
+	#print(obstacles_velocities)
+	#teste
+	count = 0
 	#the vector's size is the distance until the goal.
 	dg = np.linalg.norm(pg) 
 	
@@ -124,46 +126,64 @@ def modified_potential_field(goal,obstacles,obstacles_radius,obstacles_velocitie
 	#calculate the attractive force	
 	Fatt = modified_attractive_force(current_position, pg, epsilon,dg,Nog)
 	#print("goal = ",goal," posicao atual = ",current_position," distancia = ",dg,"vetor normal =",Nog)
+	#print(" posicao atual = ",current_position,"goal = ",goal,"Fatt = ",Fatt," distancia = ",dg)
     	# Calculate the repulsive force from each obstacle
+    	
 	for i,obstacle in enumerate(obstacles):
 		#initiate Frd,Frs,Fre
 		Frd = np.zeros_like(current_position)
 		Fre = np.zeros_like(current_position)
 		Frs = np.zeros_like(current_position)
 		
-		#get some parameters related to the obstacle i
-		d, Dm, CR, Pot, theta_m_radian, Vto, tetha, Not, AngleDiff, Notperp, Rts = iniciation(obstacles[i], current_position, vos_velocity, obstacles_velocities[i], obstacles_radius[i], Dsafe, phou0, Ros)
 		
+		#print("contagem = ",count+1," i e seus obstacles",i,obstacles[i],obstacles_velocities[i],obstacles_radius[i])
+		#print("obstaculo = ",obstacle)
+		#get some parameters related to the obstacle i
+		#verificar angulacao entre Vts e Nog. Caso a ângulação for menor que 5 graus, aplicar uma força perpendicular a Vts para a direita.
+		
+		
+		d, Dm, CR, Pot, theta_m_radian, Vto, tetha, Not, AngleDiff, Notperp, Rts = iniciation(obstacles[i], current_position, vos_velocity, obstacles_velocities[i], obstacles_radius[i], Dsafe, phou0, Ros,Nog)
+		
+			
+				
 		#print ("d = ",d," CR =",CR," theta =",tetha,"theta_m_radian",theta_m_radian," Dm =",Dm)
 		if d <= CR and tetha < theta_m_radian and Dm <= d:
-    			if obstacles_velocities[i][0] != 0 or obstacles_velocities[i][1] != 0:
-        			Frd = calculate_Frd(d,Dm,phou0,tetha,Vto,theta_m_radian,AngleDiff,Pot,Nd,Rts,dg,Not,Notperp,Nog)
-        			print("d ",d,"< CR ",CR," dinamic --------------  Frd = ",Frd)
+    			if not np.array_equal(obstacles_velocities[i], np.array([0, 0])):
+    				#verificar angulacao entre Vts e Nog. Caso a ângulação for menor que 5 graus, aplicar uma força perpendicular a Vts para a direita.
+    				#angulacao = np.degrees(np.arccos(np.dot(Pot, Nog)/(np.linalg.norm(Pot) * np.linalg.norm(Nog))))
+    				#if angulacao > 5 and angulacao > 355:
+    				#	Notperp = np.array([-Not[1], Not[0]])
+    				Frd = calculate_Frd(d,Dm,phou0,tetha,Vto,theta_m_radian,AngleDiff,Pot,Nd,Rts,dg,Not,Notperp,Nog)
+    				print("d =",d,"< CR =",CR," dinamic --------------  Frd = ",Frd)
     			else:
         			Frs = calculate_Frs(d, tau, dg, phou0, Ns, Rts, Not, Nog)
-        			print("d ",d,"< CR ",CR," static --------------  Frs = ",Frs)
+        			print("d =",d,"< CR =",CR," static --------------  Frs = ",Frs)
 		else:
     			if d < Dm :
+        			#print(" d =",d, " tau =",tau, " Dm =",Dm, " dg =",dg, " Ne =",Ne, " Rts =",Rts," Not =", Not, " Vto =",Vto, " tetha =",tetha, " Nog =",Nog," Notperp =",Notperp)
         			Fre = calculate_Fre(d, tau, Dm, dg, Ne, Rts, Not, Vto, tetha, Nog,Notperp)
-        			print("d ",d,"< Dm ", Dm," --------------  Fre = ",Fre)
+        			print("d =",d,"< Dm =", Dm," --------------  Fre = ",Fre)
     			else:
-        			print("sem obst")
-        			pass	
+        			print(" ")
+		
 		
 		Frep += Frd + Frs + Fre
+		print("obstaculo numero: ",i,"definicao do obst =",obstacles[i],"velocidade do obstaculo",obstacles_velocities[i],"Frep = ",Frep,"tetha = ",tetha,"theta_m = ",theta_m_radian)
+		#Frep += Frd
     	# Return the sum of the attractive and repulsive forces as the total force
 	total_force = Fatt + Frep
+	print("FORCA TOTAL = ",total_force)
 	return total_force
 
 
-def iniciation(obstacles, current_position, vos_velocity, obstacles_velocities, obstacles_radius, Dsafe, phou0, Ros):
+def iniciation(obstacles, current_position, vos_velocity, obstacles_velocities, obstacles_radius, Dsafe, phou0, Ros,Nog):
     #d: Euclidean distance between the current position of the boat and the i-th obstacle.
     d = np.linalg.norm(obstacles - np.array(current_position))
     
     
     #Dm: The minimum safe distance between the boat and the i-th obstacle. It is calculated as the sum of the radius of the obstacle, the safety margin and the safety distance 
     Dm = Ros + Dsafe + obstacles_radius
-    
+    print("Ros = ",Ros,"Dsafe =", Dsafe,"obstacles_radius = ",obstacles_radius)
     #CR: The critical distance from the i-th obstacle. It is calculated as the sum of Dm and phou0.
     CR = Dm + phou0
     
@@ -171,46 +191,65 @@ def iniciation(obstacles, current_position, vos_velocity, obstacles_velocities, 
     Pot = obstacles - current_position 
     
     #theta_m_radian: The angle between the vector Pot and a vector pointing to the direction of the normal line passing through the point on the circumference of the obstacle at a safe distance from it.
-    theta_m_radian = np.arctan(Dm/np.sqrt(d**2 - Dm**2))
+    #print("d = ",d," Dm = ",Dm)
+    if d >= Dm:
+    	theta_m_radian2 = np.arctan2(Dm, np.sqrt(d**2 - Dm**2))
+    	theta_m_radian = np.degrees(theta_m_radian2)
+    	#theta_m_radian = adjust_angle(theta_m_radian)
+    else:
+        theta_m_radian = 0
+    #theta_m_radian = np.arctan2(Dm,cmath.sqrt(d**2 - Dm**2))
     #print("theta_m =",math.degrees(theta_m_radian))
     #vto: The relative velocity between the boat and the i-th obstacle. 
     Vto = vos_velocity - obstacles_velocities
+    print("VOS = ",vos_velocity,"VTs = ",obstacles_velocities)
     
     #tetha: The angle between the vector Pot and the relative velocity vector vto.
-    tetha = np.arccos(np.dot(Pot, Vto) / (np.linalg.norm(Pot) * np.linalg.norm(Vto)))
+    extra = 1e-8  # You can adjust this value as needed
+    tetha2 = np.arccos(np.dot(Pot, Vto) / (np.linalg.norm(Pot) * np.linalg.norm(Vto) + extra))
+    tetha = np.degrees(tetha2)
+    #tetha = adjust_angle(tetha)
     #print("angulo = ",math.degrees(tetha),"angulo_obst = ",math.degrees(theta_m_radian) )
     
     #Not is a unit vector pointing from the current position to the obstacle
     Not = (obstacles - current_position) / d
     
     AngleDiff = theta_m_radian-tetha 
-    Notperp = comparar_vetores(Pot, Vto, obstacles_velocities,Not)
+    angulacao = np.degrees(np.arccos(np.dot(Not, Nog)/(np.linalg.norm(Not) * np.linalg.norm(Nog))))
+    histerese = 0
+    if angulacao < 5 or angulacao > 355:
+    	histerese = 5
+    Notperp = comparar_vetores(Pot, Vto, obstacles_velocities,Not,histerese)
     #Notperp = determine_side(Pot, Vto,Not)
     Rts = obstacles_radius
     
     return d, Dm, CR, Pot, theta_m_radian, Vto, tetha, Not, AngleDiff, Notperp, Rts
 
-def comparar_vetores(v1, v2, v3,Not):
+def comparar_vetores(v1, v2, v3,Not,histerese):
+    
     # calcula o produto vetorial entre os vetores v1 e v2, e entre os vetores v3 e v2
     produto_v1_v2 = v1[0]*v2[1] - v1[1]*v2[0]
     produto_v3_v2 = v3[0]*v2[1] - v3[1]*v2[0]
 
     # verifica a posição de v1 em relação a v2
-    if produto_v1_v2 > 0:  # v1 está à esquerda de v2
+    if produto_v1_v2 > histerese:  # v1 está à esquerda de v2
         # verifica a posição de v3 em relação a v2
-        if produto_v3_v2 > 0:  # v3 está à direita de v2
+        if produto_v3_v2 > histerese:  # v3 está à direita de v2
             return np.array([Not[1], -Not[0]])  # Rotate counterclockwise#"obstáculo à esquerda, mas andando para direita"
-        elif produto_v3_v2 < 0:  # v3 está à esquerda de v2
+        elif produto_v3_v2 <= -histerese:  # v3 está à esquerda de v2
             return np.array([-Not[1], Not[0]])  # Rotate clockwise#"obstáculo à esquerda e obstáculo indo para a esquerda também"
-    elif produto_v1_v2 < 0:  # v1 está à direita de v2
+    elif produto_v1_v2 < -histerese:  # v1 está à direita de v2
         # verifica a posição de v3 em relação a v2
-        if produto_v3_v2 < 0:  # v3 está à esquerda de v2
+        if produto_v3_v2 <= histerese:  # v3 está à esquerda de v2
             return np.array([-Not[1], Not[0]])  # Rotate clockwise#"obstáculo à direita, mas andando para esquerda"
-        elif produto_v3_v2 > 0:  # v3 está à direita de v2
+        elif produto_v3_v2 > -histerese:  # v3 está à direita de v2
             return np.array([Not[1], -Not[0]])  # Rotate counterclockwise#"obstáculo à direita e andando para direita"
+  
+
 
     # caso não tenha retornado ainda, não há comparação possível
-    return "Não há comparação possível"
+    #print("Não há comparação possível")
+    return np.array([-Not[1], Not[0]])
     
 def determine_side(v1, v2, Not):
     # Calculate the unit vector pointing along v1
@@ -277,5 +316,7 @@ def spawn_obstacle():
 
     process = launch.launch(node)
     rospy.loginfo("Spawned Husky robot with name 'obst_1' and position (1, 1)")
+    
+
     
 
