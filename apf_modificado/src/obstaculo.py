@@ -218,14 +218,15 @@ def iniciation(obstacles, current_position, vos_velocity, obstacles_velocities, 
     angulacao = np.degrees(np.arccos(np.dot(Not, Nog)/(np.linalg.norm(Not) * np.linalg.norm(Nog))))
     histerese = 0
     if angulacao < 5 or angulacao > 355:
-    	histerese = 5
+    	histerese = 0.1
     Notperp = comparar_vetores(Pot, Vto, obstacles_velocities,Not,histerese)
+    Notperp = decide_rotacao(vos_velocity,obstacles_velocities,Not)
     #Notperp = determine_side(Pot, Vto,Not)
     Rts = obstacles_radius
     
     return d, Dm, CR, Pot, theta_m_radian, Vto, tetha, Not, AngleDiff, Notperp, Rts
 
-def comparar_vetores(v1, v2, v3,Not,histerese):
+def comparar_vetores(v1, v2, v3,Not,histerese): #Pot, Vto, obstacles_velocities,Not,histerese
     
     # calcula o produto vetorial entre os vetores v1 e v2, e entre os vetores v3 e v2
     produto_v1_v2 = v1[0]*v2[1] - v1[1]*v2[0]
@@ -244,7 +245,39 @@ def comparar_vetores(v1, v2, v3,Not,histerese):
             return np.array([-Not[1], Not[0]])  # Rotate clockwise#"obstáculo à direita, mas andando para esquerda"
         elif produto_v3_v2 > -histerese:  # v3 está à direita de v2
             return np.array([Not[1], -Not[0]])  # Rotate counterclockwise#"obstáculo à direita e andando para direita"
-  
+
+def decide_rotacao(vr, vo,Not):
+    """
+    Decide a direção da rotação para desviar do obstáculo.
+
+    :param vr: tuple (vrx, vry), vetor velocidade do robô
+    :param vo: tuple (vox, voy), vetor velocidade do obstáculo
+    :return: string, "anti-horário", "horário" ou "paralelo"
+    """
+    vrx, vry = vr
+    vox, voy = vo
+
+    # Calcula a componente z do produto vetorial
+    pz = vrx * voy - vry * vox
+    
+    # Calcula o produto escalar e as magnitudes dos vetores de velocidade
+    dot_product = vrx * vox + vry * voy
+    vr_magnitude = math.sqrt(vrx ** 2 + vry ** 2)
+    vo_magnitude = math.sqrt(vox ** 2 + voy ** 2)
+
+    # Calcula o ângulo entre os vetores de velocidade em graus
+    angle_rad = math.acos(dot_product / (vr_magnitude * vo_magnitude))
+    angle_deg = math.degrees(angle_rad)
+
+    # Se o ângulo estiver entre 175 e 185 graus, escolha uma direção de rotação padrão (anti-horário, por exemplo)
+    if 165 <= angle_deg <= 195:
+        return -np.array([Not[1], -Not[0]])  #"anti-horário"
+    elif pz > 0:
+        return -np.array([Not[1], -Not[0]])  #"anti-horário"
+    elif pz < 0:
+        return -np.array([-Not[1], Not[0]]) #"horário"
+    else:
+        return -np.array([Not[1], -Not[0]]) #"paralelo"  
 
 
     # caso não tenha retornado ainda, não há comparação possível

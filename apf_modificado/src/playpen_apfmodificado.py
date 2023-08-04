@@ -215,7 +215,7 @@ linear_velocities_control = []
 angular_velocities = []
 angular_velocities_control = []
 
-selected_scenario = predefined_scenarios('scenario_3')
+selected_scenario = predefined_scenarios('scenario_7')
 goal_pos = selected_scenario['goal_pos']
 pos_obst = selected_scenario['obstacle_positions']
 obstacle_velocities = selected_scenario['obstacle_velocities']
@@ -360,5 +360,5 @@ plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_tim
 plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=25)
 plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=45)
 
-plot_linear_velocities(linear_velocities, linear_velocities_control)
-plot_angular_velocities(angular_velocities, angular_velocities_control)
+#plot_linear_velocities(linear_velocities, linear_velocities_control)
+#plot_angular_velocities(angular_velocities, angular_velocities_control)

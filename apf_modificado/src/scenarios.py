@@ -42,7 +42,7 @@ def predefined_scenarios(scenario_name):
         'scenario_7': {  #obstaculos do artigo
             'goal_pos': np.array([10, 10]),
             'obstacle_positions': [np.array([7.8,2.2]),np.array([6.8,4.9]),np.array([7,0]),np.array([7.5,7]),np.array([6,8]),np.array([4,8])],
-            'obstacle_velocities': [np.array([0,0]),np.array([0,0]),np.array([-0.2,0.2]),np.array([-0.18,-0.18]),np.array([0,-1/15]),np.array([2.8/20,-1.6/20])],
+            'obstacle_velocities': [np.array([0,0]),np.array([0,0]),np.array([-0.25,0.25]),np.array([-0.18,-0.18]),np.array([0,0]),np.array([2.8/20,-1.6/20])],
             'obstacle_radii': [0.4, 0.4, 0.4, 0.25, 0.25, 0.25],
         },	
         # ...

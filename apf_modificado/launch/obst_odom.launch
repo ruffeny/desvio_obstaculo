@@ -1,0 +1,10 @@
+
+<launch>
+  <node name="odom_cone" pkg="apf_modificado" type="obst1.py" output="screen" />
+  <node name="odom_cone_0" pkg="apf_modificado" type="obst2.py" output="screen" />
+  <node name="odom_cone_1" pkg="apf_modificado" type="obst3.py" output="screen" />
+  <node name="custom_box_1" pkg="apf_modificado" type="obst4.py" output="screen" />
+  <node name="odom_barrel_0" pkg="apf_modificado" type="obst5.py" output="screen" />
+  <node name="odom_barrel_1" pkg="apf_modificado" type="obst6.py" output="screen" />
+  
+</launch>
