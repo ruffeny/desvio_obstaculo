@@ -3,8 +3,8 @@ Utilização de um APF modificado para desvio de obstáculo
 
 Inicialmente irá criar o ambiente no gazebo
 
-roslaunch simulation_environment obstaculo.launch
+roslaunch apf_modificado playpen_obstaculo.launch 
 
 depois iniciar o código para desvior de obstácul
 
-rosrun apf_modificado apfmodificado.py
+rosrun apf_modificado playpen_apfmodificado.py
