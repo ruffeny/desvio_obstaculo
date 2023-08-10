@@ -227,7 +227,7 @@ print("inicio do codigo")
 #inicio do node
 rospy.init_node("apf_controller")
 sub = rospy.Subscriber("/odom_husky", Odometry, getOdom) #pega informação da posicao e velocidade do husky
-pub = rospy.Publisher("/twist_marker_server/cmd_vel", Twist, queue_size=1) #aplica no topico do husky
+pub = rospy.Publisher("/husky_velocity_controller/cmd_vel", Twist, queue_size=1) #aplica no topico do husky
 speed = Twist()
 
 #sub_box = rospy.Subscriber("/odom_box_1", Odometry, getOdomBox) #pega incormação odom do obstaculo
