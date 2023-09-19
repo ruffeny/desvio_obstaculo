@@ -299,63 +299,64 @@ r = rospy.Rate(10) # 10 hz
 i = 1
 k = 1
 robot_positions = []
+delay = 5
+
 while not rospy.is_shutdown():
-	if i <= 5:
-		i = i + 1
-	# get robot position
-	robot_pos = np.array([x, y])
-	obst.save_robot_position(robot_positions,x, y)
-	
-	#own ship velocity
-	vos_velocity = np.array([v_husky.x,v_husky.y])
-	
-	# Calcula a distância entre o Husky e cada obstáculo e armazena na lista distances_list
-	for obs in range(len(obstacles)):
-        	dist = sqrt((x - obstacles[obs][0])**2 + (y - obstacles[obs][1])**2)
-        	if obstacles[obs][0] >= 0 and obstacles[obs][1] >= 0:  # Adiciona apenas as distâncias dos obstáculos no primeiro quadrante
-        		if len(distances_list) < len(obstacles):
-        			distances_list.append([dist])
-        		else:
-        			distances_list[obs].append(dist)
-	
-	linear_velocities.append(v_husky.x)
-	angular_velocities.append(w_husky.z)
-	obstacles = [np.array([obst1.x,obst1.y]),np.array([obst2.x,obst2.y]),np.array([obst3.x,obst3.y]),np.array([obst4.x,obst4.y]),np.array([obst5.x,obst5.y]),np.array([obst6.x,obst6.y])]
-	#obstacles_radius = [0.4 , 0.4 , 0.4 , 0.25 , 0.25 , 0.25]
-	#obstacles_velocities = vel
-	list_robot_positions.append(robot_pos)
-	list_obstacle_positions.append(obstacles)
+	if delay > 0:
+		delay = delay - 1
+	else:
+		if i <= 5:
+			i = i + 1
+		# get robot position
+		robot_pos = np.array([x, y])
+		obst.save_robot_position(robot_positions,x, y)
+		
+		#own ship velocity
+		vos_velocity = np.array([v_husky.x,v_husky.y])
+		
+		# Calcula a distância entre o Husky e cada obstáculo e armazena na lista distances_list
+		for obs in range(len(obstacles)):
+			dist = sqrt((x - obstacles[obs][0])**2 + (y - obstacles[obs][1])**2)
+			if obstacles[obs][0] >= 0 and obstacles[obs][1] >= 0:  # Adiciona apenas as distâncias dos obstáculos no primeiro quadrante
+				if len(distances_list) < len(obstacles):
+					distances_list.append([dist])
+				else:
+					distances_list[obs].append(dist)
+		
+		linear_velocities.append(v_husky.x)
+		angular_velocities.append(w_husky.z)
+		obstacles = [np.array([obst1.x,obst1.y]),np.array([obst2.x,obst2.y]),np.array([obst3.x,obst3.y]),np.array([obst4.x,obst4.y]),np.array([obst5.x,obst5.y]),np.array([obst6.x,obst6.y])]
+		#obstacles_radius = [0.4 , 0.4 , 0.4 , 0.25 , 0.25 , 0.25]
+		#obstacles_velocities = vel
+		list_robot_positions.append(robot_pos)
+		list_obstacle_positions.append(obstacles)
 
-	total_force = obst.modified_potential_field(goal_pos,obstacles,obstacles_radius,obstacle_velocities,robot_pos,epsilon,Nd,Ns,Ne,tau,Ros,Dsafe,phou0,vos_velocity)
-	
-	#print("F_total = ",total_force)
-	v,w = obst.force_to_velocities(total_force, theta)
-	speed.linear.x = min(v, vmax)
-	speed.angular.z = np.sign(w) * min(abs(w), wmax)
-	linear_velocities_control.append(speed.linear.x)
-	angular_velocities_control.append(speed.angular.z)
-	#print("posicao atual = ",robot_pos,"obstacles = ",obstacles,"total_force = ",total_force)
-	distance_to_goal = np.linalg.norm(goal_pos - robot_pos) 
-	#print("distancia = ",distance_to_goal," v = ",speed.linear.x," w =",speed.angular.z)
+		total_force = obst.modified_potential_field(goal_pos,obstacles,obstacles_radius,obstacle_velocities,robot_pos,epsilon,Nd,Ns,Ne,tau,Ros,Dsafe,phou0,vos_velocity)
+		
+		#print("F_total = ",total_force)
+		v,w = obst.force_to_velocities(total_force, theta)
+		speed.linear.x = min(v, vmax)
+		speed.angular.z = np.sign(w) * min(abs(w), wmax)
+		linear_velocities_control.append(speed.linear.x)
+		angular_velocities_control.append(speed.angular.z)
+		#print("posicao atual = ",robot_pos,"obstacles = ",obstacles,"total_force = ",total_force)
+		distance_to_goal = np.linalg.norm(goal_pos - robot_pos) 
+		#print("distancia = ",distance_to_goal," v = ",speed.linear.x," w =",speed.angular.z)
 
-	if distance_to_goal < 1:
-		speed.linear.x = 0
-		speed.angular.z = 0	
-		#obst.change_position_velocity('custom_box_1',np.array([-5,-5]),np.array([0,0]))
-		if k == 1:
-			#obst.plot_robot_positions(robot_positions,pos_obst,Dm)
-			#k = K + 1
-			#obst.change_position('husky',np.array([8,8]))
-			print("nada")
-			break
-	if i>5:
-		pub.publish(speed)
-		#print("obst1 = ",obst1.x, obst1.y, obst1.theta, obst1.v_gazebo, obst1.w_gazebo)
-	r.sleep()
+		if distance_to_goal < 1:
+			speed.linear.x = 0
+			speed.angular.z = 0	
+			#obst.change_position_velocity('custom_box_1',np.array([-5,-5]),np.array([0,0]))
+			if k == 1:
+				print("nada")
+		if i>5:
+			pub.publish(speed)
+			#print("obst1 = ",obst1.x, obst1.y, obst1.theta, obst1.v_gazebo, obst1.w_gazebo)
+		r.sleep()
 
 plot_distances(distances_list, obstacles_radius,Ros)
 
-plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=1)
+plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=2)
 plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=10)
 plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=25)
 plot_simulation_positions(list_robot_positions, list_obstacle_positions, sim_time=45)
