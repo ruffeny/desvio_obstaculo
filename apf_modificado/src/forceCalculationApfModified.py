@@ -1,4 +1,8 @@
+#!/usr/bin/env python3
+
 import numpy as np
+import math
+
 
 def modified_potential_field(goal_position,list_of_obstacle_positions,list_of_obstacle_radii,list_of_obstacle_velocities,current_robot_position,attraction_scaling_factor,obstacle_scaling_factor_dynamic,obstacle_scaling_factor_static,scaling_factor_emergency,safety_margin_radius,robot_domain_radius,safe_distance,obstacle_influence_range,current_robot_velocity):
 	
