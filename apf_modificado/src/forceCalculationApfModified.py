@@ -112,9 +112,47 @@ def iniciation(obstacle_position, current_robot_position, current_robot_velocity
 	histerese = 0
 	if angulacao < 5 or angulacao > 355:
 		histerese = 0.1
-	perpendicular_unit_vector_to_obstacle = comparar_vetores(vector_to_obstacle, relative_speed_vector, obstacle_velocitiy,unit_vector_to_obstacle,histerese)
+	#perpendicular_unit_vector_to_obstacle = comparar_vetores(vector_to_obstacle, relative_speed_vector, obstacle_velocitiy,unit_vector_to_obstacle,histerese)
 	perpendicular_unit_vector_to_obstacle = decide_rotacao(current_robot_velocity,obstacle_velocitiy,unit_vector_to_obstacle)
 	#perpendicular_unit_vector_to_obstacle = determiscaling_factor_emergency_side(vector_to_obstacle, relative_speed_vector,unit_vector_to_obstacle)
 	obstacle_domain_radius = obstacle_radii
 	
 	return distance_to_obstacle, center_to_center_safe_distance, collision_avoidance_radius, vector_to_obstacle, angle_for_safe_distance, relative_speed_vector, angle_between_direction_and_velocity, unit_vector_to_obstacle, angle_difference_for_safety, perpendicular_unit_vector_to_obstacle, obstacle_domain_radius
+
+def decide_rotacao(vr, vo,unit_vector_to_obstacle):
+    """
+    Decide a direção da rotação para desviar do obstáculo.
+
+    :param vr: tuple (robot_velocity_x, robot_velocity_y), vetor velocidade do robô
+    :param vo: tuple (obstacle_velocity_x, obstacle_velocity_y), vetor velocidade do obstáculo
+    :return: string, "anti-horário", "horário" ou "paralelo"
+    """
+    robot_velocity_x, robot_velocity_y = vr
+    obstacle_velocity_x, obstacle_velocity_y = vo
+
+    # Calcula a componente z do produto vetorial
+    cross_product_z_component = robot_velocity_x * obstacle_velocity_y - robot_velocity_y * obstacle_velocity_x
+    
+    # Calcula o produto escalar e as magnitudes dos vetores de velocidade
+    velocity_dot_product = robot_velocity_x * obstacle_velocity_x + robot_velocity_y * obstacle_velocity_y
+    robot_velocity_magnitude = math.sqrt(robot_velocity_x ** 2 + robot_velocity_y ** 2)
+    obstacle_velocity_magnitude = math.sqrt(obstacle_velocity_x ** 2 + obstacle_velocity_y ** 2)
+
+    # Calcula o ângulo entre os vetores de velocidade em graus
+    angle_between_velocities_rad = math.acos(velocity_dot_product / (robot_velocity_magnitude * obstacle_velocity_magnitude))
+    angle_between_velocities_deg = math.degrees(angle_between_velocities_rad)
+
+    # Se o ângulo estiver entre 175 e 185 graus, escolha uma direção de rotação padrão (anti-horário, por exemplo)
+    if 165 <= angle_between_velocities_deg <= 195:
+        return -np.array([unit_vector_to_obstacle[1], -unit_vector_to_obstacle[0]])  #"anti-horário"
+    elif cross_product_z_component > 0:
+        return -np.array([unit_vector_to_obstacle[1], -unit_vector_to_obstacle[0]])  #"anti-horário"
+    elif cross_product_z_component < 0:
+        return -np.array([-unit_vector_to_obstacle[1], unit_vector_to_obstacle[0]]) #"horário"
+    else:
+        return -np.array([unit_vector_to_obstacle[1], -unit_vector_to_obstacle[0]]) #"paralelo"  
+
+
+    # caso não tenha retornado ainda, não há comparação possível
+    #print("Não há comparação possível")
+    return np.array([-unit_vector_to_obstacle[1], unit_vector_to_obstacle[0]])
