@@ -117,13 +117,13 @@ def iniciation(obstacle_position, current_robot_position, current_robot_velocity
 	if angulacao < 5 or angulacao > 355:
 		histerese = 0.1
 	#perpendicular_unit_vector_to_obstacle = comparar_vetores(vector_to_obstacle, relative_speed_vector, obstacle_velocitiy,unit_vector_to_obstacle,histerese)
-	perpendicular_unit_vector_to_obstacle = decide_rotacao(current_robot_velocity,obstacle_velocitiy,unit_vector_to_obstacle)
+	perpendicular_unit_vector_to_obstacle = determine_avoidance_direction(current_robot_velocity,obstacle_velocitiy,unit_vector_to_obstacle)
 	#perpendicular_unit_vector_to_obstacle = determiscaling_factor_emergency_side(vector_to_obstacle, relative_speed_vector,unit_vector_to_obstacle)
 	obstacle_domain_radius = obstacle_radii
 	
 	return distance_to_obstacle, center_to_center_safe_distance, collision_avoidance_radius, vector_to_obstacle, angle_for_safe_distance, relative_speed_vector, angle_between_direction_and_velocity, unit_vector_to_obstacle, angle_difference_for_safety, perpendicular_unit_vector_to_obstacle, obstacle_domain_radius
 
-def decide_rotacao(vr, vo,unit_vector_to_obstacle):
+def determine_avoidance_direction(vr, vo,unit_vector_to_obstacle):
     """
     Decide a direção da rotação para desviar do obstáculo.
 
