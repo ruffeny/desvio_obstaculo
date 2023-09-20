@@ -5,6 +5,20 @@ import math
 
 
 def modified_potential_field(goal_position,list_of_obstacle_positions,list_of_obstacle_radii,list_of_obstacle_velocities,current_robot_position,attraction_scaling_factor,obstacle_scaling_factor_dynamic,obstacle_scaling_factor_static,scaling_factor_emergency,safety_margin_radius,robot_domain_radius,safe_distance,obstacle_influence_range,current_robot_velocity):
+	# goal_position - > vetor com posição x e y
+	# list_of_obstacle_positions -> uma lista de vetores da posição do obstáculo.
+	# list_of_obstacle_radii -> uma lista com os raios do obstáculo (correspondente com a posição na list_of_obstacle_position
+	# list_of_obstacle_velocities -> uma lista de vetores da velocidade do obstáculo (correspondente com a posição e o raio da list_of_obstacle)
+	# current_robot_position -> posição do robô no mundo
+	# attraction_scaling_factor -> valor definido pelo projetista. Na simulação foi igual a 6000. No artigo de Liu foi igual a 3000
+	# obstacle_scaling_factor_dynamic -> Seria o Nd no artigo. Valor definido pelo projetista. Simulação = 20000. Artigo = 2000
+	# obstacle_scaling_factor_static -> Ns no artigo. Valor definido pelo projetista. Simulação = 3000000. Artigo = 300000
+	# scaling_factor_emergency -> Ne no artigo. Valor definido pelo projetista. Simulação = 40000. Artigo = 2000
+	# safety_margin_radius -> No artigo e na simulaçõa com valor de 0.3. representa um pequeno raio de uma margem de segurança artificial para o robô (OS), garantindo que a superfície dos obstáculos tenha um potencial repulsivo suficientemente grande mas limitado
+	# robot_domain_radius -> Raio do robô 
+	# safe_distance -> representa a distância segura permissível entre o robô e um obstáculo
+	# obstacle_influence_range -> representa o alcance de influência do conjunto de obstáculos (TS) e pode variar com base de um operador/projetista para condições como visibilidade baixa ou águas abertas. (variar entre 3 a 5). Foi usado 5 na simulação
+	# current_robot_velocity -> vetor de velocidade atual do robô em relação ao mundo.
 	
 	vector_to_goal = goal_position - current_robot_position 
 	count = 0 #Inutilizado
